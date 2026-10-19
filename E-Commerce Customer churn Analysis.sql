@@ -22,8 +22,7 @@ CREATE TABLE customer_churn(
     CouponUsed                  INT,
     OrderCount                  INT,
     DaySinceLastOrder           INT,
-    CashbackAmount              INT
-    );
+    CashbackAmount              INT);
 
 INSERT INTO customer_churn(CustomerID,Churn,Tenure,PreferredLoginDevice,CityTier,WarehouseToHome,PreferredPaymentMode,Gender,HourSpendOnApp,NumberOfDeviceRegistered,PreferedOrderCat,SatisfactionScore,MaritalStatus,NumberOfAddress,Complain,OrderAmountHikeFromlastYear,CouponUsed,OrderCount,DaySinceLastOrder,CashbackAmount) VALUES
     (50001,1,4,'Mobile Phone',3,6,'Debit Card','Female',3,3,'Laptop & Accessory',2,'Single',9,1,11,1,1,5,160),
@@ -5674,22 +5673,10 @@ FROM customer_churn;
 
 SELECT ROUND(AVG(WarehouseToHome)) AS mean_warehouse, ROUND(AVG(HourSpendOnApp)) AS mean_app_hours, ROUND(AVG(OrderAmountHikeFromlastYear)) AS mean_order_hike, ROUND(AVG(DaySinceLastOrder)) AS mean_last_order_days FROM customer_churn;
 
-
-UPDATE customer_churn
-SET WarehouseToHome = 16
-WHERE WarehouseToHome IS NULL;
-
-UPDATE customer_churn
-SET HourSpendOnApp = 3
-WHERE HourSpendOnApp IS NULL;
-
-UPDATE customer_churn
-SET OrderAmountHikeFromlastYear = 16
-WHERE OrderAmountHikeFromlastYear IS NULL;
-
-UPDATE customer_churn
-SET DaySinceLastOrder = 5
-WHERE DaySinceLastOrder IS NULL;
+UPDATE customer_churn SET WarehouseToHome = 16 WHERE WarehouseToHome IS NULL;
+UPDATE customer_churn SET HourSpendOnApp = 3 WHERE HourSpendOnApp IS NULL;
+UPDATE customer_churn SET OrderAmountHikeFromlastYear = 16 WHERE OrderAmountHikeFromlastYear IS NULL;
+UPDATE customer_churn SET DaySinceLastOrder = 5 WHERE DaySinceLastOrder IS NULL;
 
 SELECT
     SUM(WarehouseToHome IS NULL) AS missing_warehouse,
@@ -5726,7 +5713,6 @@ UPDATE customer_churn
 SET PreferredPaymentMode = 'Credit Card'
 WHERE PreferredPaymentMode = 'CC';
 
--- 1. Check whether any missing values remain
 SELECT
     SUM(WarehouseToHome IS NULL) AS missing_warehouse,
     SUM(HourSpendOnApp IS NULL) AS missing_app_hours,
@@ -5737,7 +5723,6 @@ SELECT
     SUM(OrderCount IS NULL) AS missing_order_count
 FROM customer_churn;
 
--- 2. Check whether any outliers remain
 SELECT COUNT(*) AS remaining_outliers
 FROM customer_churn
 WHERE WarehouseToHome > 100;
@@ -5762,7 +5747,6 @@ SELECT DISTINCT PreferredPaymentMode FROM customer_churn;
 
 ALTER TABLE customer_churn RENAME COLUMN PreferedOrderCat TO PreferredOrderCat;
 ALTER TABLE customer_churn RENAME COLUMN HourSpendOnApp TO HoursSpentOnApp;
-
 ALTER TABLE customer_churn ADD COLUMN ComplaintReceived VARCHAR(3), ADD COLUMN ChurnStatus VARCHAR(7);
 
 UPDATE customer_churn
@@ -5775,7 +5759,6 @@ ALTER TABLE customer_churn DROP COLUMN Churn, DROP COLUMN Complain;
 SELECT * FROM customer_churn LIMIT 5;
 
 
-
 #DATA EXPLORATION AND ANALYSIS#
 
 SELECT  ChurnStatus, COUNT(*) AS CustomerCount FROM customer_churn GROUP BY ChurnStatus;
@@ -5786,7 +5769,11 @@ SELECT ROUND(SUM(CASE WHEN ComplaintReceived = 'Yes' THEN 1 ELSE 0 END) * 100.0 
 
 
 SELECT CityTier,
-COUNT(*) AS ChurnedCustomerCount FROM customer_churn WHERE ChurnStatus = 'Yes'AND PreferredOrderCat = 'Laptop & Accessory'GROUP BY CityTier ORDER BY ChurnedCustomerCount DESC LIMIT 1;
+    COUNT(*) AS ChurnedCustomerCount 
+    FROM customer_churn WHERE ChurnStatus = 'Yes'
+    AND PreferredOrderCat = 'Laptop & Accessory'
+    GROUP BY CityTier ORDER BY ChurnedCustomerCount 
+    DESC LIMIT 1;
 
 SELECT PreferredPaymentMode, COUNT(*) AS CustomerCount
 FROM customer_churn
@@ -5796,104 +5783,105 @@ ORDER BY CustomerCount DESC
 LIMIT 1;
 
 SELECT
-    SUM(OrderAmountHikeFromlastYear) AS TotalOrderAmountHike
-FROM customer_churn
-WHERE MaritalStatus = 'Single'
-  AND PreferredLoginDevice = 'Mobile Phone';
+    SUM(OrderAmountHikeFromlastYear) AS TotalOrderAmountHike 
+    FROM customer_churn
+    WHERE MaritalStatus = 'Single'
+    AND PreferredLoginDevice = 'Mobile Phone';
   
   
 SELECT
     ROUND(AVG(NumberOfDeviceRegistered), 2) AS AverageDevices
-FROM customer_churn
-WHERE PreferredPaymentMode = 'UPI';
+    FROM customer_churn
+    WHERE PreferredPaymentMode = 'UPI';
 
 SELECT
     CityTier,
     COUNT(*) AS CustomerCount
-FROM customer_churn
-GROUP BY CityTier
-ORDER BY CustomerCount DESC
-LIMIT 1;
+    FROM customer_churn
+    GROUP BY CityTier
+    ORDER BY CustomerCount DESC
+    LIMIT 1;
 
 SELECT
     Gender,
     SUM(CouponUsed) AS TotalCouponsUsed
-FROM customer_churn
-GROUP BY Gender
-ORDER BY TotalCouponsUsed DESC
-LIMIT 1;
+    FROM customer_churn
+    GROUP BY Gender
+    ORDER BY TotalCouponsUsed DESC
+    LIMIT 1;
 
 SELECT
     PreferredOrderCat,
     COUNT(*) AS CustomerCount,
     MAX(HoursSpentOnApp) AS MaximumHoursSpent
-FROM customer_churn
-GROUP BY PreferredOrderCat;
+    FROM customer_churn
+    GROUP BY PreferredOrderCat;
 
 SELECT
     SUM(OrderCount) AS TotalOrderCount
-FROM customer_churn
-WHERE PreferredPaymentMode = 'Credit Card'
-  AND SatisfactionScore = (SELECT MAX(SatisfactionScore)FROM customer_churn);
+    FROM customer_churn
+    WHERE PreferredPaymentMode = 'Credit Card'
+    AND SatisfactionScore = (SELECT MAX(SatisfactionScore)FROM customer_churn);
   
   SELECT
     ROUND(AVG(SatisfactionScore), 2) AS AverageSatisfactionScore
-FROM customer_churn
-WHERE ComplaintReceived = 'Yes';
+      FROM customer_churn 
+      WHERE ComplaintReceived = 'Yes';
 
 SELECT DISTINCT
     PreferredOrderCat
-FROM customer_churn
-WHERE CouponUsed > 5;
+    FROM customer_churn
+    WHERE CouponUsed > 5;
 
 SELECT
     PreferredOrderCat,
     ROUND(AVG(CashbackAmount), 2) AS AverageCashback
-FROM customer_churn
-GROUP BY PreferredOrderCat
-ORDER BY AverageCashback DESC
-LIMIT 3;
+    FROM customer_churn
+    GROUP BY PreferredOrderCat
+    ORDER BY AverageCashback DESC
+    LIMIT 3;
 
 SELECT
     PreferredPaymentMode,
     ROUND(AVG(Tenure), 2) AS AverageTenure,
     SUM(OrderCount) AS TotalOrders
-FROM customer_churn
-GROUP BY PreferredPaymentMode
-HAVING ROUND(AVG(Tenure), 2) = 10
-   AND SUM(OrderCount) > 500;
+    FROM customer_churn
+    GROUP BY PreferredPaymentMode
+    HAVING ROUND(AVG(Tenure), 2) = 10
+    AND SUM(OrderCount) > 500;
    
    
    
 SELECT
 CASE WHEN WarehouseToHome <= 5 
-THEN 'Very Close Distance'WHEN WarehouseToHome <= 10
-THEN 'Close Distance'WHEN WarehouseToHome <= 15
-THEN 'Moderate Distance'
-ELSE 'Far Distance'END AS DistanceCategory,ChurnStatus,COUNT(*) AS CustomerCount FROM customer_churn GROUP BY DistanceCategory,ChurnStatus
+    THEN 'Very Close Distance'WHEN WarehouseToHome <= 10
+    THEN 'Close Distance'WHEN WarehouseToHome <= 15
+    THEN 'Moderate Distance'
+    ELSE 'Far Distance'END AS DistanceCategory,ChurnStatus,
+    COUNT(*) AS CustomerCount FROM customer_churn GROUP BY DistanceCategory,ChurnStatus
 ORDER BY
-CASE DistanceCategory
-WHEN 'Very Close Distance' THEN 1
-WHEN 'Close Distance' THEN 2
-WHEN 'Moderate Distance' THEN 3 ELSE 4 END,ChurnStatus;
+    CASE DistanceCategory
+    WHEN 'Very Close Distance' THEN 1
+    WHEN 'Close Distance' THEN 2
+    WHEN 'Moderate Distance' THEN 3 
+    ELSE 4 
+    END,ChurnStatus;
 
 
 SELECT *FROM customer_churn WHERE MaritalStatus = 'Married'AND CityTier = 1 AND OrderCount > (SELECT AVG(OrderCount)FROM customer_churn);
 
-
-
 CREATE TABLE customer_returns (ReturnID INT PRIMARY KEY,CustomerID INT,ReturnDate DATE,RefundAmount DECIMAL(10,2));
 
-
-INSERT INTO customer_returns (ReturnID, CustomerID, ReturnDate, RefundAmount)VALUES
-(1001, 50022, '2023-01-01', 2130),
-(1002, 50316, '2023-01-23', 2000),
-(1003, 51099, '2023-02-14', 2290),
-(1004, 52321, '2023-03-08', 2510),
-(1005, 52928, '2023-03-20', 3000),
-(1006, 53749, '2023-04-17', 1740),
-(1007, 54206, '2023-04-21', 3250),
-(1008, 54838, '2023-04-30', 1990);
+INSERT INTO customer_returns (ReturnID, CustomerID, ReturnDate, RefundAmount)
+    VALUES
+    (1001, 50022, '2023-01-01', 2130),
+    (1002, 50316, '2023-01-23', 2000),
+    (1003, 51099, '2023-02-14', 2290),
+    (1004, 52321, '2023-03-08', 2510),
+    (1005, 52928, '2023-03-20', 3000),
+    (1006, 53749, '2023-04-17', 1740),
+    (1007, 54206, '2023-04-21', 3250),
+    (1008, 54838, '2023-04-30', 1990);
 
 SELECT * FROM customer_returns;
 
